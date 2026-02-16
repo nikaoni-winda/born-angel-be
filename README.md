@@ -2,38 +2,38 @@
 
 REST API untuk platform booking layanan kecantikan/makeup. Dibangun dengan Laravel 12, PHP 8.2+, autentikasi Sanctum, pembayaran Midtrans, dan upload gambar Cloudinary.
 
-## Tech Stack
+## Teknologi yang Digunakan
 
 - **Framework:** Laravel 12
 - **PHP:** 8.2+
-- **Auth:** Laravel Sanctum (token-based)
-- **Database:** MySQL (production) / SQLite in-memory (testing)
-- **Payment:** Midtrans Snap
-- **Image Storage:** Cloudinary
-- **Frontend Build:** Vite + Tailwind CSS 4.0
+- **Autentikasi:** Laravel Sanctum (berbasis token)
+- **Database:** MySQL (produksi) / SQLite in-memory (testing)
+- **Pembayaran:** Midtrans Snap
+- **Penyimpanan Gambar:** Cloudinary
+- **Build Frontend:** Vite + Tailwind CSS 4.0
 - **Testing:** PHPUnit 11.5
 - **Linting:** Laravel Pint
 
-## Quick Start
+## Cara Memulai
 
-### Prerequisites
+### Prasyarat
 
 - PHP 8.2+
 - Composer
 - Node.js & npm
 - MySQL
 
-### Installation
+### Instalasi
 
 ```bash
-# Clone repository
+# Clone repositori
 git clone https://github.com/your-username/born-angel-api.git
 cd born-angel-api
 
-# Full setup (install deps, copy .env, generate key, migrate, build frontend)
+# Setup otomatis (install dependensi, salin .env, generate key, migrasi, build frontend)
 composer setup
 
-# Atau manual
+# Atau setup manual
 composer install
 npm install
 cp .env.example .env
@@ -44,7 +44,7 @@ npm run build
 
 ### Konfigurasi Environment
 
-Salin `.env.example` ke `.env` dan isi variabel berikut:
+Salin `.env.example` ke `.env` lalu isi variabel berikut:
 
 ```env
 DB_CONNECTION=mysql
@@ -54,13 +54,13 @@ DB_DATABASE=born_angel_db
 DB_USERNAME=root
 DB_PASSWORD=
 
-MIDTRANS_SERVER_KEY=your-server-key
-MIDTRANS_CLIENT_KEY=your-client-key
+MIDTRANS_SERVER_KEY=kunci-server-anda
+MIDTRANS_CLIENT_KEY=kunci-client-anda
 
 CLOUDINARY_URL=cloudinary://API_KEY:API_SECRET@CLOUD_NAME
 ```
 
-### Menjalankan Development Server
+### Menjalankan Server Development
 
 ```bash
 # Jalankan server, queue worker, log streaming, dan Vite secara bersamaan
@@ -71,27 +71,27 @@ Server berjalan di `http://127.0.0.1:8000`.
 
 ## Akun Default (Seeder)
 
-| Role | Email | Password |
-|------|-------|----------|
+| Peran | Email | Kata Sandi |
+|-------|-------|------------|
 | Super Admin | `superadmin@example.com` | `password` |
 | Admin | `admin@example.com` | `password` |
-| Instructor | `instructor@example.com` | `password` |
-| User | `user@example.com` | `password` |
+| Instruktur | `instructor@example.com` | `password` |
+| Pengguna | `user@example.com` | `password` |
 
 ## Arsitektur
 
-### Role-Based Access Control (RBAC)
+### Kontrol Akses Berbasis Peran (RBAC)
 
-4 level role dengan hierarki ketat:
+4 level peran dengan hierarki ketat:
 
 ```
 super_admin > admin > instructor > user
 ```
 
-- **super_admin** — Akses penuh, kelola admin, tidak bisa dihapus (User ID 1 dilindungi)
-- **admin** — Kelola layanan, jadwal, instruktur, user, laporan
-- **instructor** — Lihat jadwal & review milik sendiri
-- **user** — Booking, review, kelola profil
+- **super_admin** — Akses penuh, kelola admin, tidak bisa dihapus (User ID 1 dilindungi/immutable)
+- **admin** — Kelola layanan, jadwal, instruktur, pengguna, laporan. Tidak bisa menyentuh super admin.
+- **instructor** — Lihat jadwal & review milik sendiri saja
+- **user** — Booking, review, kelola profil sendiri
 
 ### Model & Relasi
 
@@ -105,74 +105,75 @@ Review → belongsTo Booking
 Payment → belongsTo Booking
 ```
 
-### Context-Aware Endpoints
+### Endpoint Sadar Konteks (Context-Aware)
 
-Beberapa endpoint mengembalikan data berbeda berdasarkan role user yang login:
+Beberapa endpoint mengembalikan data berbeda tergantung peran user yang login:
 
-| Endpoint | User | Instructor | Admin |
-|----------|------|------------|-------|
-| `GET /api/schedules` | Jadwal upcoming | Jadwal milik sendiri | Semua jadwal |
+| Endpoint | Publik/User | Instruktur | Admin |
+|----------|-------------|------------|-------|
+| `GET /api/schedules` | Jadwal yang akan datang | Jadwal milik sendiri (lalu & akan datang) | Semua jadwal |
 | `GET /api/bookings` | Booking milik sendiri | — | Semua booking |
-| `GET /api/reviews` | Semua review | Review untuk kelasnya | Semua review |
+| `GET /api/reviews` | Semua review | Review untuk kelas miliknya | Semua review |
 
 ### Fitur Teknis
 
-- **Pessimistic locking** pada pembuatan booking (`lockForUpdate()` dalam `DB::transaction()`) untuk mencegah race condition pada slot
-- **Soft deletes** pada model User, Service, Instructor, Schedule, Booking
-- **Auto-finish bookings** — Scheduler (`bookings:finish`) berjalan tiap menit untuk otomatis mengubah status booking menjadi `finished` setelah jadwal lewat
+- **Pessimistic locking** — `Schedule::lockForUpdate()` dalam `DB::transaction()` saat membuat booking, mencegah race condition pada ketersediaan slot
+- **Soft deletes** — pada model User, Service, Instructor, Schedule, Booking (data tidak benar-benar terhapus)
+- **Auto-finish bookings** — Scheduler `bookings:finish` berjalan tiap menit, otomatis mengubah status booking dari `confirmed` ke `finished` setelah `end_time` jadwal lewat
 
-## API Endpoints
+## Daftar API Endpoint
 
-### Public (Tanpa Auth)
+### Publik (Tanpa Autentikasi)
 
-| Method | Endpoint | Deskripsi |
+| Metode | Endpoint | Deskripsi |
 |--------|----------|-----------|
-| POST | `/api/register` | Registrasi user baru |
-| POST | `/api/login` | Login, mendapat token |
+| POST | `/api/register` | Registrasi pengguna baru |
+| POST | `/api/login` | Login, mendapat token API |
 | GET | `/api/services` | Daftar semua layanan |
 | GET | `/api/services/{id}` | Detail layanan |
 | GET | `/api/instructors` | Daftar semua instruktur |
 | GET | `/api/instructors/{id}` | Detail instruktur |
-| GET | `/api/schedules` | Jadwal tersedia |
+| GET | `/api/schedules` | Daftar jadwal (publik: yang akan datang saja) |
 | GET | `/api/schedules/{id}` | Detail jadwal |
-| GET | `/api/testimonials` | Review untuk homepage |
-| POST | `/api/payments/callback` | Midtrans webhook |
+| GET | `/api/testimonials` | Daftar review untuk halaman utama |
+| POST | `/api/payments/callback` | Webhook notifikasi Midtrans |
 
-### Authenticated (Perlu Token)
+### Terotentikasi (Perlu Token Sanctum)
 
-| Method | Endpoint | Deskripsi |
+| Metode | Endpoint | Deskripsi |
 |--------|----------|-----------|
-| POST | `/api/logout` | Logout, revoke token |
-| GET | `/api/profile` | Lihat profil |
-| PUT | `/api/profile` | Update profil |
-| DELETE | `/api/profile` | Hapus akun |
-| GET | `/api/bookings` | Daftar booking |
+| POST | `/api/logout` | Logout, cabut token |
+| GET | `/api/profile` | Lihat profil sendiri |
+| PUT | `/api/profile` | Perbarui profil |
+| DELETE | `/api/profile` | Hapus akun sendiri |
+| GET | `/api/test-auth` | Debug: cek status autentikasi |
+| GET | `/api/bookings` | Daftar booking (user: milik sendiri, admin: semua) |
 | POST | `/api/bookings` | Buat booking baru |
-| POST | `/api/bookings/{id}/cancel` | Batalkan booking |
-| GET | `/api/payments/snap-token/{booking_id}` | Dapat Midtrans Snap token |
-| GET | `/api/reviews` | Daftar review |
-| POST | `/api/reviews` | Buat review |
-| PUT | `/api/reviews/{id}` | Update review |
-| DELETE | `/api/reviews/{id}` | Hapus review |
+| POST | `/api/bookings/{id}/cancel` | Batalkan booking (pemilik atau admin) |
+| GET | `/api/payments/snap-token/{booking_id}` | Dapatkan Midtrans Snap token |
+| GET | `/api/reviews` | Daftar review (sadar konteks per peran) |
+| POST | `/api/reviews` | Buat review (harus punya booking terkait) |
+| PUT | `/api/reviews/{id}` | Perbarui review (pemilik saja) |
+| DELETE | `/api/reviews/{id}` | Hapus review (pemilik atau admin) |
 
 ### Admin & Super Admin
 
-| Method | Endpoint | Deskripsi |
+| Metode | Endpoint | Deskripsi |
 |--------|----------|-----------|
 | GET | `/api/admin/dashboard/stats` | Statistik dashboard |
-| GET | `/api/users` | Daftar user |
+| GET | `/api/users` | Daftar pengguna (mendukung filter `?role=instructor`) |
 | POST | `/api/users` | Buat akun admin/instruktur |
-| GET | `/api/users/{id}` | Detail user |
-| PUT | `/api/users/{id}` | Update user |
-| DELETE | `/api/users/{id}` | Hapus user |
-| POST | `/api/services` | Buat layanan |
-| PUT | `/api/services/{id}` | Update layanan |
+| GET | `/api/users/{id}` | Detail pengguna |
+| PUT | `/api/users/{id}` | Perbarui pengguna (hierarki ditegakkan) |
+| DELETE | `/api/users/{id}` | Hapus pengguna (hierarki ditegakkan) |
+| POST | `/api/services` | Buat layanan baru |
+| PUT | `/api/services/{id}` | Perbarui layanan |
 | DELETE | `/api/services/{id}` | Hapus layanan |
 | POST | `/api/instructors` | Buat profil instruktur |
-| PUT | `/api/instructors/{id}` | Update instruktur |
-| DELETE | `/api/instructors/{id}` | Hapus instruktur |
-| POST | `/api/schedules` | Buat jadwal |
-| PUT | `/api/schedules/{id}` | Update jadwal |
+| PUT | `/api/instructors/{id}` | Perbarui profil instruktur |
+| DELETE | `/api/instructors/{id}` | Hapus profil instruktur |
+| POST | `/api/schedules` | Buat jadwal baru |
+| PUT | `/api/schedules/{id}` | Perbarui jadwal |
 | DELETE | `/api/schedules/{id}` | Hapus jadwal |
 | GET | `/api/reports/revenue` | Laporan pendapatan |
 | GET | `/api/reports/services-performance` | Performa layanan |
@@ -183,103 +184,112 @@ Beberapa endpoint mengembalikan data berbeda berdasarkan role user yang login:
 ## Alur Pembayaran (Midtrans)
 
 ```
-1. User buat booking         → POST /api/bookings (status: pending)
-2. Ambil Snap token          → GET /api/payments/snap-token/{booking_id}
-3. User bayar via Midtrans   → (redirect ke Midtrans Snap)
-4. Midtrans kirim callback   → POST /api/payments/callback
-5. Status booking terupdate  → confirmed / cancelled
-6. Jadwal lewat              → Scheduler otomatis ubah ke finished
+1. User buat booking           → POST /api/bookings (status: pending)
+2. Ambil Snap token            → GET /api/payments/snap-token/{booking_id}
+3. User bayar via Midtrans     → (diarahkan ke halaman Midtrans Snap)
+4. Midtrans kirim notifikasi   → POST /api/payments/callback
+5. Status booking diperbarui   → confirmed / cancelled
+6. Jadwal kelas lewat          → Scheduler otomatis ubah ke finished
 ```
 
 Metode pembayaran yang didukung:
-- Credit Card (3D Secure)
+
+- Kartu Kredit (3D Secure)
 - GoPay, ShopeePay, QRIS
-- Bank Transfer (BCA VA, BNI VA, BRI VA, Permata VA)
+- Transfer Bank (BCA VA, BNI VA, BRI VA, Permata VA)
 
 ## Upload Gambar (Cloudinary)
 
 - **Gambar layanan** — disimpan di folder `services/`
 - **Foto instruktur** — disimpan di folder `instructors/`
-- **Maks ukuran:** 5MB
-- **Format:** JPEG, PNG, JPG, GIF
+- **Ukuran maksimal:** 5MB
+- **Format yang diterima:** JPEG, PNG, JPG, GIF
 
-## Perintah Umum
+## Perintah-Perintah Umum
 
 ```bash
-# Development server
+# Jalankan server development (server + queue + log + Vite)
 composer dev
 
-# Jalankan test
+# Jalankan semua test
 composer test
 
-# Test spesifik
+# Jalankan test tertentu
 php artisan test --filter=NamaTest
 
-# Lint kode
+# Periksa gaya kode (linting)
 ./vendor/bin/pint
 
 # Migrasi database
 php artisan migrate
 
-# Reset & seed ulang
+# Reset database & isi ulang data seeder
 php artisan migrate:fresh --seed
 
-# Interactive debugging
+# Debugging interaktif
 php artisan tinker
 
-# Jalankan scheduler (production)
+# Jalankan scheduler di production
 php artisan schedule:work
 ```
 
-## Testing
+## Pengujian (Testing)
 
 ```bash
 # Jalankan semua test
 composer test
 
-# Jalankan test spesifik
-php artisan test --filter=ExampleTest
+# Jalankan test tertentu
+php artisan test --filter=NamaTest
 ```
 
-Test menggunakan SQLite in-memory sehingga tidak mempengaruhi database development.
+Test menggunakan SQLite in-memory sehingga tidak mempengaruhi database development. Konfigurasi test ada di `phpunit.xml`.
 
-## Postman Collection
+## Koleksi Postman
 
 Koleksi Postman tersedia di folder `postman/` dengan fitur:
 
-- Semua endpoint sudah terkonfigurasi
+- Semua endpoint sudah terkonfigurasi dan siap digunakan
 - Token otomatis tersimpan saat login dan terhapus saat logout
-- Environment variables terpisah
+- Variabel environment terpisah (`base_url`, `token`, `user_role`, `user_id`, `my_instructor_id`)
 
-Lihat [`postman/README.md`](postman/README.md) untuk panduan lengkap.
+Lihat [`postman/README.md`](postman/README.md) untuk panduan penggunaan lengkap.
 
 ## Deployment
 
-Panduan deployment ke Railway tersedia di [`docs/DEPLOYMENT_RAILWAY.md`](docs/DEPLOYMENT_RAILWAY.md).
+Panduan deployment ke Railway tersedia di [`docs/DEPLOYMENT_RAILWAY.md`](docs/DEPLOYMENT_RAILWAY.md), mencakup:
+
+- Setup project & database MySQL di Railway
+- Konfigurasi Nixpacks (`nixpacks.toml`)
+- Variabel environment untuk produksi
+- Setup worker scheduler (auto-finish bookings)
+- Konfigurasi Midtrans production & webhook
+- Domain & troubleshooting
 
 ## Struktur Project
 
 ```
 born-angel-api/
 ├── app/
-│   ├── Console/Commands/       # Artisan commands (FinishCompletedBookings)
+│   ├── Console/Commands/          # Command artisan (FinishCompletedBookings)
 │   ├── Http/
-│   │   ├── Controllers/Api/    # 11 API controllers
-│   │   └── Middleware/          # EnsureUserHasRole (RBAC)
-│   └── Models/                 # 7 Eloquent models
+│   │   ├── Controllers/Api/       # 11 controller API
+│   │   └── Middleware/             # EnsureUserHasRole (RBAC)
+│   └── Models/                    # 7 model Eloquent
 ├── config/
-│   ├── midtrans.php            # Konfigurasi Midtrans
-│   └── cloudinary.php          # Konfigurasi Cloudinary
+│   ├── midtrans.php               # Konfigurasi Midtrans
+│   └── cloudinary.php             # Konfigurasi Cloudinary
 ├── database/
-│   ├── migrations/             # 13 migration files
-│   ├── seeders/                # Database seeders
-│   └── factories/              # Model factories
+│   ├── migrations/                # 13 file migrasi
+│   ├── seeders/                   # Seeder database
+│   └── factories/                 # Factory untuk testing
 ├── docs/
-│   └── DEPLOYMENT_RAILWAY.md   # Panduan deployment
-├── postman/                    # Postman collection & environment
+│   └── DEPLOYMENT_RAILWAY.md      # Panduan deployment Railway
+├── postman/                       # Koleksi & environment Postman
 ├── routes/
-│   ├── api.php                 # Semua API routes
-│   └── console.php             # Scheduler (bookings:finish)
-├── nixpacks.toml               # Konfigurasi build Railway
-└── CONTROLLER_RBAC.md          # Matriks akses kontrol
+│   ├── api.php                    # Semua route API
+│   └── console.php                # Penjadwal (bookings:finish)
+├── nixpacks.toml                  # Konfigurasi build Railway
+├── CONTROLLER_RBAC.md             # Matriks kontrol akses per controller
+└── CLAUDE.md                      # Panduan untuk Claude Code
 ```
