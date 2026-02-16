@@ -1,0 +1,1598 @@
+{
+    "info": {
+        "_postman_id": "ba-rbac-2026",
+        "name": "Born Angel API - Complete RBAC Testing",
+        "description": "Complete API testing collection with strict RBAC enforcement.\n\n**Roles:**\n- Super Admin (God Mode)\n- Admin (Manager)\n- Instructor (Employee)\n- User (Customer)\n\n**Auto Token Management:**\n- Login saves token automatically\n- Logout clears token automatically",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "1. Authentication",
+            "item": [
+                {
+                    "name": "Register (New User)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    console.log('\u2705 Registration successful');",
+                                    "} else {",
+                                    "    console.log('\u274c Registration failed');",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Test User\",\n    \"email\": \"testuser@example.com\",\n    \"password\": \"password123\",\n    \"phone_number\": \"081234567890\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/register",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "register"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Login",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    ",
+                                    "    // Save to environment variables (if environment is selected)",
+                                    "    try {",
+                                    "        pm.environment.set('token', jsonData.access_token);",
+                                    "        pm.environment.set('user_role', jsonData.user.role);",
+                                    "        pm.environment.set('user_id', jsonData.user.id);",
+                                    "        if (jsonData.user.role === 'instructor' && jsonData.user.instructor) {",
+                                    "            pm.environment.set('my_instructor_id', jsonData.user.instructor.id);",
+                                    "        }",
+                                    "    } catch (e) {",
+                                    "        // No environment selected, that's okay",
+                                    "    }",
+                                    "    ",
+                                    "    // ALSO save to collection variables (always works)",
+                                    "    pm.collectionVariables.set('token', jsonData.access_token);",
+                                    "    pm.collectionVariables.set('user_role', jsonData.user.role);",
+                                    "    pm.collectionVariables.set('user_id', jsonData.user.id);",
+                                    "    if (jsonData.user.role === 'instructor' && jsonData.user.instructor) {",
+                                    "        pm.collectionVariables.set('my_instructor_id', jsonData.user.instructor.id);",
+                                    "    }",
+                                    "    ",
+                                    "    console.log('\u2705 Login successful');",
+                                    "    console.log('\ud83d\udc64 Role: ' + jsonData.user.role);",
+                                    "    console.log('\ud83d\udd11 Token saved to variables');",
+                                    "} else {",
+                                    "    console.log('\u274c Login failed');",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"superadmin@example.com\",\n    \"password\": \"password\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/login",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "login"
+                            ]
+                        },
+                        "description": "Login with credentials. Token will be automatically saved to environment.\n\n**Test Accounts:**\n- superadmin@example.com (Super Admin)\n- admin@example.com (Admin)\n- instructor@example.com (Instructor)\n- user@example.com (User)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Logout",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    // Clear environment variables (if environment is selected)",
+                                    "    try {",
+                                    "        pm.environment.unset('token');",
+                                    "        pm.environment.unset('user_role');",
+                                    "        pm.environment.unset('user_id');",
+                                    "        pm.environment.unset('my_instructor_id');",
+                                    "    } catch (e) {",
+                                    "        // No environment selected, that's okay",
+                                    "    }",
+                                    "    ",
+                                    "    // ALSO clear collection variables",
+                                    "    pm.collectionVariables.unset('token');",
+                                    "    pm.collectionVariables.unset('user_role');",
+                                    "    pm.collectionVariables.unset('user_id');",
+                                    "    pm.collectionVariables.unset('my_instructor_id');",
+                                    "    ",
+                                    "    console.log('\u2705 Logout successful');",
+                                    "    console.log('\ud83d\udd13 Token cleared from variables');",
+                                    "} else {",
+                                    "    console.log('\u274c Logout failed');",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/logout",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "logout"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Debug - Test Auth",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/test-auth",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "test-auth"
+                            ]
+                        },
+                        "description": "Debug endpoint to verify authentication status and see current user data."
+                    },
+                    "response": []
+                }
+            ],
+            "description": "Authentication endpoints for all users."
+        },
+        {
+            "name": "2. Profile (All Roles)",
+            "item": [
+                {
+                    "name": "Get My Profile",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/profile",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "profile"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Update My Profile",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Updated Name\",\n    \"phone_number\": \"081234567899\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/profile",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "profile"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Delete My Profile",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/profile",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "profile"
+                            ]
+                        },
+                        "description": "Self-delete account (soft delete)."
+                    },
+                    "response": []
+                }
+            ],
+            "description": "Profile management for all authenticated users."
+        },
+        {
+            "name": "3. Public Endpoints",
+            "item": [
+                {
+                    "name": "Services",
+                    "item": [
+                        {
+                            "name": "Get All Services",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/api/services",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "services"
+                                    ]
+                                }
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Get Service by ID",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/api/services/1",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "services",
+                                        "1"
+                                    ]
+                                }
+                            },
+                            "response": []
+                        }
+                    ]
+                },
+                {
+                    "name": "Instructors",
+                    "item": [
+                        {
+                            "name": "Get All Instructors",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/api/instructors",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "instructors"
+                                    ]
+                                }
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Get Instructor by ID",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/api/instructors/1",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "instructors",
+                                        "1"
+                                    ]
+                                }
+                            },
+                            "response": []
+                        }
+                    ]
+                },
+                {
+                    "name": "Schedules",
+                    "item": [
+                        {
+                            "name": "Get Schedules (Context-Aware)",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/api/schedules",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "schedules"
+                                    ]
+                                },
+                                "description": "**Context-Aware:**\n- Public/User: See upcoming schedules only\n- Instructor: See own schedules (past & future)\n- Admin: See all schedules (past & future)"
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Get Schedule by ID",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/api/schedules/1",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "schedules",
+                                        "1"
+                                    ]
+                                }
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Get Schedules by Instructor",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/api/schedules?instructor_id=1",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "schedules"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "instructor_id",
+                                            "value": "1"
+                                        }
+                                    ]
+                                }
+                            },
+                            "response": []
+                        }
+                    ]
+                },
+                {
+                    "name": "Reviews",
+                    "item": [
+                        {
+                            "name": "Get Reviews (Context-Aware)",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/api/reviews",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "reviews"
+                                    ]
+                                },
+                                "description": "**Context-Aware:**\n- Public/User/Admin: See all reviews\n- Instructor: See only reviews for own classes"
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Get Reviews by Instructor",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/api/reviews?instructor_id=1",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "reviews"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "instructor_id",
+                                            "value": "1"
+                                        }
+                                    ]
+                                }
+                            },
+                            "response": []
+                        }
+                    ]
+                }
+            ],
+            "description": "Public endpoints accessible without authentication. Some are context-aware and show different data based on user role."
+        },
+        {
+            "name": "4. User/Customer Features",
+            "item": [
+                {
+                    "name": "Bookings",
+                    "item": [
+                        {
+                            "name": "Get My Bookings",
+                            "request": {
+                                "auth": {
+                                    "type": "bearer",
+                                    "bearer": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{token}}",
+                                            "type": "string"
+                                        }
+                                    ]
+                                },
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/api/bookings",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "bookings"
+                                    ]
+                                },
+                                "description": "**Context-Aware:**\n- User: See only own bookings\n- Admin: See all bookings"
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Create Booking",
+                            "request": {
+                                "auth": {
+                                    "type": "bearer",
+                                    "bearer": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{token}}",
+                                            "type": "string"
+                                        }
+                                    ]
+                                },
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"schedule_id\": 1\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/api/bookings",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "bookings"
+                                    ]
+                                },
+                                "description": "Create a new booking. User role only."
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Cancel Booking",
+                            "request": {
+                                "auth": {
+                                    "type": "bearer",
+                                    "bearer": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{token}}",
+                                            "type": "string"
+                                        }
+                                    ]
+                                },
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/api/bookings/1/cancel",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "bookings",
+                                        "1",
+                                        "cancel"
+                                    ]
+                                },
+                                "description": "Cancel a booking. Owner or Admin only."
+                            },
+                            "response": []
+                        }
+                    ]
+                },
+                {
+                    "name": "Reviews",
+                    "item": [
+                        {
+                            "name": "Create Review",
+                            "request": {
+                                "auth": {
+                                    "type": "bearer",
+                                    "bearer": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{token}}",
+                                            "type": "string"
+                                        }
+                                    ]
+                                },
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"booking_id\": 1,\n    \"rating\": 5,\n    \"comment\": \"Excellent class! Very professional instructor.\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/api/reviews",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "reviews"
+                                    ]
+                                },
+                                "description": "Create review for completed booking. Must be booking owner and class must be finished."
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Update Review",
+                            "request": {
+                                "auth": {
+                                    "type": "bearer",
+                                    "bearer": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{token}}",
+                                            "type": "string"
+                                        }
+                                    ]
+                                },
+                                "method": "PUT",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"rating\": 4,\n    \"comment\": \"Updated review comment.\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/api/reviews/1",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "reviews",
+                                        "1"
+                                    ]
+                                },
+                                "description": "Update own review. Owner only."
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Delete Review",
+                            "request": {
+                                "auth": {
+                                    "type": "bearer",
+                                    "bearer": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{token}}",
+                                            "type": "string"
+                                        }
+                                    ]
+                                },
+                                "method": "DELETE",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/api/reviews/1",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "reviews",
+                                        "1"
+                                    ]
+                                },
+                                "description": "Delete review. Owner or Admin only."
+                            },
+                            "response": []
+                        }
+                    ]
+                }
+            ],
+            "description": "Features for regular users (customers). Includes booking and review management."
+        },
+        {
+            "name": "5. Admin & Super Admin",
+            "item": [
+                {
+                    "name": "User Management",
+                    "item": [
+                        {
+                            "name": "Get All Users",
+                            "request": {
+                                "auth": {
+                                    "type": "bearer",
+                                    "bearer": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{token}}",
+                                            "type": "string"
+                                        }
+                                    ]
+                                },
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/api/users",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "users"
+                                    ]
+                                },
+                                "description": "Get all users. Admin & Super Admin only."
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Get Users by Role",
+                            "request": {
+                                "auth": {
+                                    "type": "bearer",
+                                    "bearer": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{token}}",
+                                            "type": "string"
+                                        }
+                                    ]
+                                },
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/api/users?role=instructor",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "users"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "role",
+                                            "value": "instructor",
+                                            "description": "Filter by role: user, instructor, admin, super_admin"
+                                        }
+                                    ]
+                                }
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Get User by ID",
+                            "request": {
+                                "auth": {
+                                    "type": "bearer",
+                                    "bearer": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{token}}",
+                                            "type": "string"
+                                        }
+                                    ]
+                                },
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/api/users/1",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "users",
+                                        "1"
+                                    ]
+                                }
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Create Admin",
+                            "request": {
+                                "auth": {
+                                    "type": "bearer",
+                                    "bearer": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{token}}",
+                                            "type": "string"
+                                        }
+                                    ]
+                                },
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"name\": \"New Admin\",\n    \"email\": \"newadmin@example.com\",\n    \"password\": \"password123\",\n    \"phone_number\": \"081234567891\",\n    \"role\": \"admin\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/api/users",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "users"
+                                    ]
+                                },
+                                "description": "Create new admin account. Admin & Super Admin only.\n\n**Hierarchy:**\n- Admin can create: admin, instructor\n- Super Admin can create: super_admin, admin, instructor"
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Create Instructor User",
+                            "request": {
+                                "auth": {
+                                    "type": "bearer",
+                                    "bearer": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{token}}",
+                                            "type": "string"
+                                        }
+                                    ]
+                                },
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"name\": \"New Instructor\",\n    \"email\": \"newinstructor@example.com\",\n    \"password\": \"password123\",\n    \"phone_number\": \"081234567892\",\n    \"role\": \"instructor\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/api/users",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "users"
+                                    ]
+                                },
+                                "description": "Create instructor user account. Must create instructor profile separately."
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Update User",
+                            "request": {
+                                "auth": {
+                                    "type": "bearer",
+                                    "bearer": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{token}}",
+                                            "type": "string"
+                                        }
+                                    ]
+                                },
+                                "method": "PUT",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"name\": \"Updated Name\",\n    \"phone_number\": \"081234567893\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/api/users/2",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "users",
+                                        "2"
+                                    ]
+                                },
+                                "description": "Update user. Hierarchy enforced:\n- Cannot edit Master Account (ID 1)\n- Admin cannot edit Super Admin\n- Admin cannot promote to Super Admin"
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Delete User",
+                            "request": {
+                                "auth": {
+                                    "type": "bearer",
+                                    "bearer": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{token}}",
+                                            "type": "string"
+                                        }
+                                    ]
+                                },
+                                "method": "DELETE",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/api/users/2",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "users",
+                                        "2"
+                                    ]
+                                },
+                                "description": "Delete user. Hierarchy enforced:\n- Cannot delete Master Account (ID 1)\n- Admin cannot delete Super Admin\n- Cannot delete self"
+                            },
+                            "response": []
+                        }
+                    ]
+                },
+                {
+                    "name": "Service Management",
+                    "item": [
+                        {
+                            "name": "Create Service",
+                            "request": {
+                                "auth": {
+                                    "type": "bearer",
+                                    "bearer": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{token}}",
+                                            "type": "string"
+                                        }
+                                    ]
+                                },
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"name\": \"Advanced Yoga Class\",\n    \"description\": \"Advanced yoga class for maximum flexibility\",\n    \"price\": 150000,\n    \"duration_minutes\": 90,\n    \"image\": \"https://example.com/yoga.jpg\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/api/services",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "services"
+                                    ]
+                                },
+                                "description": "Create new service. Admin & Super Admin only."
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Update Service",
+                            "request": {
+                                "auth": {
+                                    "type": "bearer",
+                                    "bearer": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{token}}",
+                                            "type": "string"
+                                        }
+                                    ]
+                                },
+                                "method": "PUT",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"name\": \"Updated Service Name\",\n    \"price\": 175000\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/api/services/1",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "services",
+                                        "1"
+                                    ]
+                                }
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Delete Service",
+                            "request": {
+                                "auth": {
+                                    "type": "bearer",
+                                    "bearer": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{token}}",
+                                            "type": "string"
+                                        }
+                                    ]
+                                },
+                                "method": "DELETE",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/api/services/1",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "services",
+                                        "1"
+                                    ]
+                                },
+                                "description": "Soft delete service. Admin & Super Admin only."
+                            },
+                            "response": []
+                        }
+                    ]
+                },
+                {
+                    "name": "Instructor Management",
+                    "item": [
+                        {
+                            "name": "Create Instructor Profile",
+                            "request": {
+                                "auth": {
+                                    "type": "bearer",
+                                    "bearer": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{token}}",
+                                            "type": "string"
+                                        }
+                                    ]
+                                },
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"user_id\": 5,\n    \"service_id\": 1,\n    \"bio\": \"Experienced instructor with international certification\",\n    \"photo\": \"https://example.com/instructor.jpg\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/api/instructors",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "instructors"
+                                    ]
+                                },
+                                "description": "Create instructor profile. User must have role 'instructor' first. Admin & Super Admin only."
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Update Instructor Profile",
+                            "request": {
+                                "auth": {
+                                    "type": "bearer",
+                                    "bearer": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{token}}",
+                                            "type": "string"
+                                        }
+                                    ]
+                                },
+                                "method": "PUT",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"bio\": \"Updated bio in English\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/api/instructors/1",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "instructors",
+                                        "1"
+                                    ]
+                                }
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Delete Instructor Profile",
+                            "request": {
+                                "auth": {
+                                    "type": "bearer",
+                                    "bearer": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{token}}",
+                                            "type": "string"
+                                        }
+                                    ]
+                                },
+                                "method": "DELETE",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/api/instructors/1",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "instructors",
+                                        "1"
+                                    ]
+                                },
+                                "description": "Delete instructor profile. Admin & Super Admin only."
+                            },
+                            "response": []
+                        }
+                    ]
+                },
+                {
+                    "name": "Schedule Management",
+                    "item": [
+                        {
+                            "name": "Create Schedule",
+                            "request": {
+                                "auth": {
+                                    "type": "bearer",
+                                    "bearer": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{token}}",
+                                            "type": "string"
+                                        }
+                                    ]
+                                },
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"service_id\": 1,\n    \"instructor_id\": 1,\n    \"start_time\": \"2026-03-15 10:00:00\",\n    \"end_time\": \"2026-03-15 11:30:00\",\n    \"total_capacity\": 20\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/api/schedules",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "schedules"
+                                    ]
+                                },
+                                "description": "Create schedule. Validates:\n- Instructor teaches this service\n- No time overlap for instructor\n- Start time is in future\n\nAdmin & Super Admin only."
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Update Schedule",
+                            "request": {
+                                "auth": {
+                                    "type": "bearer",
+                                    "bearer": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{token}}",
+                                            "type": "string"
+                                        }
+                                    ]
+                                },
+                                "method": "PUT",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"start_time\": \"2026-03-15 11:00:00\",\n    \"end_time\": \"2026-03-15 12:30:00\",\n    \"total_capacity\": 25\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/api/schedules/1",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "schedules",
+                                        "1"
+                                    ]
+                                },
+                                "description": "Update schedule. Validates:\n- No time overlap\n- Capacity cannot be reduced below current bookings"
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Delete Schedule",
+                            "request": {
+                                "auth": {
+                                    "type": "bearer",
+                                    "bearer": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{token}}",
+                                            "type": "string"
+                                        }
+                                    ]
+                                },
+                                "method": "DELETE",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/api/schedules/1",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "schedules",
+                                        "1"
+                                    ]
+                                },
+                                "description": "Delete schedule. Cannot delete if active bookings exist."
+                            },
+                            "response": []
+                        }
+                    ]
+                }
+            ],
+            "description": "Management features for Admin and Super Admin roles. Includes user, service, instructor, and schedule management."
+        }
+    ],
+    "event": [
+        {
+            "listen": "prerequest",
+            "script": {
+                "type": "text/javascript",
+                "exec": [
+                    ""
+                ]
+            }
+        },
+        {
+            "listen": "test",
+            "script": {
+                "type": "text/javascript",
+                "exec": [
+                    ""
+                ]
+            }
+        }
+    ],
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://127.0.0.1:8000",
+            "type": "string"
+        },
+        {
+            "key": "token",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "user_role",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "user_id",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "my_instructor_id",
+            "value": "",
+            "type": "string"
+        }
+    ]
+}
