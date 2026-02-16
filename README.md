@@ -105,6 +105,10 @@ Review → belongsTo Booking
 Payment → belongsTo Booking
 ```
 
+### Entity Relationship Diagram (ERD)
+
+![ERD Born Angel API](erd.png)
+
 ### Endpoint Sadar Konteks (Context-Aware)
 
 Beberapa endpoint mengembalikan data berbeda tergantung peran user yang login:
