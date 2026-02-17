@@ -31,7 +31,6 @@ RUN npm run build
 
 # Post-install
 RUN composer dump-autoload --optimize
-RUN php artisan config:cache || true
 RUN php artisan route:cache || true
 RUN php artisan view:cache || true
 
