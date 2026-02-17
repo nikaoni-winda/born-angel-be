@@ -20,6 +20,12 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Skip seeding if data already exists
+        if (User::count() > 0) {
+            $this->command->info('Database already seeded. Skipping.');
+            return;
+        }
+
         // 1. Create specific testing users
         $this->command->info('Creating testing users...');
 
@@ -97,13 +103,15 @@ class DatabaseSeeder extends Seeder
         $instructorModels = [];
 
         foreach ($instructorNames as $index => $name) {
-            $user = User::create([
-                'name' => 'Instructor ' . $name,
-                'email' => strtolower($name) . '@example.com',
-                'password' => Hash::make('password'),
-                'phone_number' => '082222222' . $index,
-                'role' => 'instructor',
-            ]);
+            $user = User::firstOrCreate(
+                ['email' => strtolower($name) . '@example.com'],
+                [
+                    'name' => 'Instructor ' . $name,
+                    'password' => Hash::make('password'),
+                    'phone_number' => '082222222' . $index,
+                    'role' => 'instructor',
+                ]
+            );
 
             $instructorModels[] = Instructor::create([
                 'user_id' => $user->id,
